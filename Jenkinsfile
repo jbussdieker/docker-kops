@@ -1,12 +1,15 @@
 #!groovy
+latest = "1.14.0-alpha.1"
+stable = "1.11.1"
+
 properties([
   parameters([
-    string(defaultValue: '1.11.1', description: 'Kops Version', name: 'KopsVersion')
+    string(defaultValue: '1.11.1', description: 'Version', name: 'Version')
   ])
 ])
 
 node {
-  kopsVersion = params.KopsVersion
+  kopsVersion = params.Version
   credentialsId = 'docker-hub-credentials'
 
   stage('clone') {
@@ -26,6 +29,10 @@ node {
   stage('publish') {
     docker.withRegistry("", credentialsId) {
       image.push()
+      if (kopsVersion == latest)
+        image.push('latest')
+      else if (kopsVersion == stable)
+        image.push('stable')
     }
   }
 }
