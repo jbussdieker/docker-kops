@@ -1,6 +1,13 @@
 #!groovy
+properties([
+  parameters([
+    string(defaultValue: '1.11.1', description: 'Kops Version', name: 'KopsVersion')
+  ])
+])
+
 node {
-  kopsVersion = "1.11.1"
+  kopsVersion = params.KopsVersion
+  credentialsId = 'docker-hub-credentials'
 
   stage('clone') {
     checkout scm
@@ -10,13 +17,15 @@ node {
     image = docker.build("jbussdieker/kops:${kopsVersion}", "--build-arg kops_version=${kopsVersion} .")
   }
 
-  stage("test") {
+  stage('test') {
     image.inside {
       sh "kops version | grep ${kopsVersion}"
     }
   }
 
   stage('publish') {
-    image.push()
+    docker.withRegistry("", credentialsId) {
+      image.push()
+    }
   }
 }
