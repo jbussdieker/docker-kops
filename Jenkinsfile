@@ -31,7 +31,7 @@ node {
       image.push()
       if (kopsVersion == latest)
         image.push('latest')
-      else if (kopsVersion == stable)
+      if (kopsVersion == stable)
         image.push('stable')
     }
   }
